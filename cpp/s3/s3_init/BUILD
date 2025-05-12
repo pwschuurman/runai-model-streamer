@@ -3,7 +3,7 @@ load("//:rules.bzl", "runai_cc_auto_library", "runai_cc_test")
 runai_cc_auto_library(
     name = "s3_init",
     deps = [
-        "@aws",
+        "@aws_sdk_cpp//:s3-crt",
         "//utils/env",
         "//utils/logging",
     ],

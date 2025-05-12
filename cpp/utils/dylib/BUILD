@@ -6,7 +6,6 @@ runai_cc_auto_library(
         "//utils/logging",
         "//utils/scope_guard",
     ],
-    linkopts = ["-ldl"],
 )
 
 runai_cc_so(

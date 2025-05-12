@@ -5,9 +5,12 @@
 namespace runai::llm::streamer::common::s3
 {
 
+struct StorageUri_C;
+
 struct StorageUri
 {
     StorageUri(const std::string & uri);
+    StorageUri(const StorageUri_C & uri);
 
     std::string bucket;
     std::string path;

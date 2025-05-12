@@ -6,3 +6,6 @@ build --force_pic
 
 build --action_env=BAZEL_LINKOPTS=-static-libstdc++
 build --action_env=BAZEL_LINKLIBS=-l%:libstdc++.a
+
+build --noenable_bzlmod
+build --incompatible_enable_cc_toolchain_resolution

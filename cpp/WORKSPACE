@@ -1,59 +1,66 @@
-load("//toolchain:rules.bzl", "runai_cc_configure_toolchain", "runai_cc_autoconf_impl_x86", "runai_cc_autoconf_impl_arm64")
+load("//old_toolchain:rules.bzl", "runai_cc_configure_toolchain", "runai_cc_autoconf_impl_x86", "runai_cc_autoconf_impl_arm64")
 
 runai_cc_configure_toolchain("x86_64", runai_cc_autoconf_impl_x86)
 runai_cc_configure_toolchain("aarch64", runai_cc_autoconf_impl_arm64)
 
-new_local_repository(
-    name = "aws",
-    path = "/opt",
-    build_file_content = """
-package(default_visibility = ["//visibility:public"])
-
-# s3 crt dependency diagram: https://docs.aws.amazon.com/sdkref/latest/guide/common-runtime.html
-
-config_setting(
-    name = "dynamic_link",
-    define_values = {
-        "USE_SYSTEM_LIBS": "1",
-    },
+register_toolchains(
+    "//toolchain:x86_64_linux_toolchain",
+    "//toolchain:aarch64_linux_toolchain",
 )
 
-cc_library(
-    name = "aws",
-    hdrs = glob(["*aws/include/**/*.*"]),
-    includes = ["$(BASE_PATH)-aws/include"],
-    linkopts = [
-        "-L/opt/$(BASE_PATH)-zlib/lib",
-        "-lz",
-        "-L/opt/$(BASE_PATH)-aws/lib",
-        "-lpthread",
-        "-l:libaws-cpp-sdk-s3-crt.a",
-        "-l:libaws-cpp-sdk-core.a",
-        "-l:libaws-crt-cpp.a",
-        "-l:libaws-c-mqtt.a",
-        "-l:libaws-c-event-stream.a",
-        "-l:libaws-c-s3.a",
-        "-l:libaws-c-auth.a",
-        "-l:libaws-c-http.a",
-        "-l:libaws-c-io.a",
-        "-l:libs2n.a",
-        "-l:libaws-c-compression.a",
-        "-l:libaws-c-cal.a",
-        "-l:libaws-c-sdkutils.a",
-        "-l:libaws-checksums.a",
-        "-l:libaws-c-common.a",
-        "-ldl -lm -lrt",
-    ] + select({
-        ":dynamic_link": ["-lssl", "-lcrypto", "-lcurl"],
-        "//conditions:default": [
-            "-l:/opt/$(BASE_PATH)-curl/lib/libcurl.a",
-            "-l:/opt/$(BASE_PATH)-ssl/lib/libssl.a",
-            "-l:/opt/$(BASE_PATH)-ssl/lib/libcrypto.a",
-        ],
-    }),
+# Add the necessary Starlark functions to fetch google-cloud-cpp.
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+# Fetch the Google Cloud C++ libraries.
+# NOTE: Update this version and SHA256 as needed.
+http_archive(
+    name = "google_cloud_cpp",
+    sha256 = "10867580483cb338e7d50920c2383698f3572cc6b4c7d072e38d5f43755cbd80",
+    strip_prefix = "google-cloud-cpp-2.37.0",
+    url = "https://github.com/googleapis/google-cloud-cpp/archive/v2.37.0.tar.gz",
 )
 
-""")
+#grpc_extra_deps()
 
-load("//:rules.bzl", "runai_cc_test_dependencies")
-runai_cc_test_dependencies()
+load("@google_cloud_cpp//bazel:workspace0.bzl", "gl_cpp_workspace0")
+
+gl_cpp_workspace0()
+
+load("@google_cloud_cpp//bazel:workspace1.bzl", "gl_cpp_workspace1")
+
+gl_cpp_workspace1()
+
+load("@google_cloud_cpp//bazel:workspace2.bzl", "gl_cpp_workspace2")
+
+gl_cpp_workspace2()
+
+load("@google_cloud_cpp//bazel:workspace3.bzl", "gl_cpp_workspace3")
+
+gl_cpp_workspace3()
+
+load("@google_cloud_cpp//bazel:workspace4.bzl", "gl_cpp_workspace4")
+
+gl_cpp_workspace4()
+
+load("@google_cloud_cpp//bazel:workspace5.bzl", "gl_cpp_workspace5")
+
+gl_cpp_workspace5()
+
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
+git_repository(
+    name = "aws_sdk_cpp",
+    init_submodules = True,
+    recursive_init_submodules = True,
+    remote = "https://github.com/aws/aws-sdk-cpp.git",
+    build_file = "//:aws_sdk_cpp.BUILD",
+    # Use the commit hash to allow bazel to cache the git repository.
+    # tag = "1.11.321",
+    commit = "a7683563d714cc6235255052b61991b70f80d0f0",
+)
+
+load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
+
+# This sets up some common toolchains for building targets. For more details, please see
+# https://github.com/bazel-contrib/rules_foreign_cc/tree/main/docs#rules_foreign_cc_dependencies
+rules_foreign_cc_dependencies()

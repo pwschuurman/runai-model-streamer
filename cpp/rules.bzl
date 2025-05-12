@@ -1,16 +1,3 @@
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-def runai_cc_test_dependencies():
-    http_archive(
-        name = "com_google_googletest",
-        urls = [
-            "https://mirror.bazel.build/github.com/google/googletest/archive/9816b96a6ddc0430671693df90192bbee57108b6.zip",
-            "https://github.com/google/googletest/archive/9816b96a6ddc0430671693df90192bbee57108b6.zip",
-        ],
-        sha256 = "9cbca84c4256bed17df2c8f4d00c912c19d247c11c9ba6647cd6dd5b5c996b8d",
-        strip_prefix = "googletest-9816b96a6ddc0430671693df90192bbee57108b6",
-    )
-
 def _runai_cc_binary(rule, linkopts=[], rpath_origin=False, **kwargs):
     linkopts = linkopts + ["-Wl,--gc-sections", "-Wl,--fatal-warnings"]
 
@@ -28,17 +15,14 @@ def runai_cc_binary(**kwargs):
 def runai_cc_test(deps=[], linkopts=[], **kwargs):
     _runai_cc_binary(
         native.cc_test,
-        deps=deps + ["//cc/testing"],
+        deps=deps + [
+            "//cc/testing"
+        ],
         linkopts = linkopts + ["-lm"],
         **kwargs)
 
-def runai_cc_library(copts=[], linkstatic=True, visibility=["//visibility:public"], **kwargs):
+def runai_cc_library(copts=[], visibility=["//visibility:public"], **kwargs):
     native.cc_library(
-        copts=copts + [
-            "-ffunction-sections",
-            "-fdata-sections",
-        ],
-        linkstatic=linkstatic,
         visibility=visibility,
         **kwargs
     )
