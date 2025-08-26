@@ -1,5 +1,6 @@
 from runai_model_streamer.safetensors_streamer.safetensors_streamer import (
     SafetensorsStreamer,
+    list_files,
     list_safetensors,
     pull_files,
 )
@@ -10,6 +11,7 @@ __all__ = [
     "SafetensorsStreamer",
     "FileStreamer",
     "FileChunks",
+    "list_files",
     "list_safetensors",
     "pull_files",
 ]

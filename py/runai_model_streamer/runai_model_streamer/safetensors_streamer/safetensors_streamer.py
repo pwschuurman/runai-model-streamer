@@ -23,11 +23,16 @@ from runai_model_streamer.s3_utils.s3_utils import (
 SAFETENSORS_PATTERN = "*.safetensors"
 
 def list_safetensors(path: str, s3_credentials : Optional[S3Credentials] = None) -> List[str]:
+    return list_files(path, SAFETENSORS_PATTERN, s3_credentials)
+
+def list_files(path: str,
+               allow_pattern: Optional[str] = None,
+               s3_credentials : Optional[S3Credentials] = None) -> List[str]:
     if is_s3_path(path):
-        return s3_glob(path, [SAFETENSORS_PATTERN], s3_credentials)
+        return s3_glob(path, [allow_pattern], s3_credentials)
     if is_gs_path(path):
-        return gcs_glob(path, [SAFETENSORS_PATTERN])
-    return glob.glob(os.path.join(path, SAFETENSORS_PATTERN))
+        return gcs_glob(path, [allow_pattern])
+    return glob.glob(os.path.join(path, allow_pattern))
 
 def pull_files(model_path: str,
                 dst: str,

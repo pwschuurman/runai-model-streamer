@@ -12,6 +12,7 @@ from tests.safetensors.comparison import tensor_maps_are_equal
 from botocore.exceptions import NoCredentialsError, ClientError
 from runai_model_streamer.safetensors_streamer.safetensors_streamer import (
     SafetensorsStreamer,
+    list_files,
     list_safetensors,
     pull_files
 )
@@ -96,6 +97,18 @@ class TestS3Compatibility(unittest.TestCase):
             self.fail(f"Tensor mismatch: {message}")
             
     def test_list_files(self):
+        file_paths = [create_random_files(self.temp_dir) for _ in range(FILE_COUNT)]
+
+        directory = random_letters(10)
+        for file_path in file_paths:
+            self.minio_server.upload_file_to_minio(self.s3_bucket, directory, file_path)
+
+        json_files = [f"s3://{self.s3_bucket}/{directory}/{os.path.basename(fp)}" for fp in file_paths if fp.endswith('.json')]
+
+        result_files = list_files(f"s3://{self.s3_bucket}/{directory}", '*.json')
+        self.assertEqual(sorted(result_files), sorted(json_files))
+
+    def test_list_safetensors(self):
         file_paths = [create_random_files(self.temp_dir) for _ in range(FILE_COUNT)]
 
         directory = random_letters(10)
